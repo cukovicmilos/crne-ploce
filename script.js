@@ -44,6 +44,7 @@ class CrnePloce {
             this.records = await response.json();
             this.displayRecords();
             this.updateRecordCount();
+            this.updateYearChart();
         } catch (error) {
             console.error('Error loading records:', error);
             this.showStatus('Greška pri učitavanju kolekcije', 'error');
@@ -58,7 +59,14 @@ class CrnePloce {
             return;
         }
 
-        grid.innerHTML = this.records.map(record => `
+        // Sort records by year (oldest first)
+        const sortedRecords = [...this.records].sort((a, b) => {
+            const yearA = a.year || 9999;
+            const yearB = b.year || 9999;
+            return yearA - yearB;
+        });
+
+        grid.innerHTML = sortedRecords.map(record => `
             <div class="record-card" onclick="app.showRecordDetails('${record.id}')">
                 <div class="record-cover">
                     ${record.cover ?
@@ -241,6 +249,93 @@ class CrnePloce {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    updateYearChart() {
+        const canvas = document.getElementById('yearChart');
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+
+        // Clear canvas
+        ctx.clearRect(0, 0, width, height);
+
+        if (this.records.length === 0) {
+            return;
+        }
+
+        // Count records by year
+        const yearCounts = {};
+        this.records.forEach(record => {
+            const year = record.year || 'Nepoznata';
+            yearCounts[year] = (yearCounts[year] || 0) + 1;
+        });
+
+        // Sort years and create continuous range
+        const sortedYears = Object.keys(yearCounts)
+            .filter(y => y !== 'Nepoznata')
+            .map(y => parseInt(y))
+            .sort((a, b) => a - b);
+
+        if (sortedYears.length === 0) return;
+
+        const minYear = sortedYears[0];
+        const maxYear = sortedYears[sortedYears.length - 1];
+        const yearRange = maxYear - minYear + 1;
+
+        // Fill in missing years with 0
+        const dataPoints = [];
+        for (let year = minYear; year <= maxYear; year++) {
+            dataPoints.push({
+                year: year,
+                count: yearCounts[year] || 0
+            });
+        }
+
+        const maxCount = Math.max(...dataPoints.map(d => d.count));
+        const paddingBottom = 20;
+        const paddingX = 25;
+        const chartHeight = height - paddingBottom;
+        const chartWidth = width - (paddingX * 2);
+        const barWidth = chartWidth / dataPoints.length;
+        const barSpacing = 1;
+
+        // Draw histogram bars
+        dataPoints.forEach((point, index) => {
+            if (point.count > 0) {
+                const x = paddingX + (index * barWidth);
+                const barHeight = (point.count / maxCount) * chartHeight;
+                const y = height - barHeight;
+
+                // Create gradient for each bar
+                const gradient = ctx.createLinearGradient(x, y, x, height);
+                gradient.addColorStop(0, '#ff6b6b');
+                gradient.addColorStop(1, '#4ecdc4');
+
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x + barSpacing/2, y, barWidth - barSpacing, barHeight);
+            }
+        });
+
+        // Draw year labels
+        ctx.fillStyle = '#cccccc';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'center';
+
+        // Show first and last year
+        ctx.fillText(minYear.toString(), paddingX + barWidth/2, height - 5);
+        ctx.fillText(maxYear.toString(), paddingX + chartWidth - barWidth/2, height - 5);
+
+        // Show middle year if range is large
+        if (yearRange > 10) {
+            const midYear = Math.floor((minYear + maxYear) / 2);
+            const midIndex = dataPoints.findIndex(p => p.year === midYear);
+            if (midIndex >= 0) {
+                ctx.fillText(midYear.toString(), paddingX + (midIndex * barWidth) + barWidth/2, height - 5);
+            }
+        }
     }
 }
 
