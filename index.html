@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crne Ploče - Lična Kolekcija Vinila</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>🎵 Crne Ploče</h1>
+        <p>Lična kolekcija vinila</p>
+    </header>
+
+    <main>
+        <section class="search-section">
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Unesite Discogs ID ploče (npr. 123456)">
+                <button id="addRecordBtn">Dodaj Ploču</button>
+            </div>
+            <div id="searchStatus" class="status-message"></div>
+        </section>
+
+        <section class="collection-section">
+            <h2>Moja Kolekcija (<span id="recordCount">0</span>)</h2>
+            <div id="recordsGrid" class="records-grid">
+                <div class="loading">Učitavam kolekciju...</div>
+            </div>
+        </section>
+    </main>
+
+    <div id="recordModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

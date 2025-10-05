@@ -1,0 +1,16 @@
+# Configuration files with sensitive data
+config.php
+
+# Records directory (user data)
+records/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
