@@ -22,7 +22,7 @@ header {
     max-width: 1200px;
     margin: 0 auto;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
     gap: 3rem;
     padding: 0 2rem;
@@ -46,12 +46,57 @@ header p {
     color: #cccccc;
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
 .year-chart {
     flex: 0 0 auto;
 }
 
 .year-chart canvas {
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.auth-status {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: #cccccc;
+}
+
+.auth-status .username {
+    color: #4ecdc4;
+    font-weight: 600;
+}
+
+.auth-status button {
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+.auth-status button:hover {
+    background: rgba(255, 107, 107, 0.2);
+    border-color: #ff6b6b;
+}
+
+.auth-status .login-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+}
+
+.auth-status .login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 main {
@@ -62,6 +107,10 @@ main {
 
 .search-section {
     margin-bottom: 3rem;
+}
+
+.search-section.hidden {
+    display: none;
 }
 
 .search-container {

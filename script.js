@@ -7,6 +7,7 @@ class CrnePloce {
     init() {
         this.setupEventListeners();
         this.loadRecords();
+        this.updateAuthStatus();
     }
 
     setupEventListeners() {
@@ -101,6 +102,16 @@ class CrnePloce {
             return;
         }
 
+        // Check if user is authenticated
+        const credentials = sessionStorage.getItem('authCredentials');
+        if (!credentials) {
+            this.showStatus('Morate se prijaviti da biste dodali ploču', 'error');
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1500);
+            return;
+        }
+
         const addBtn = document.getElementById('addRecordBtn');
         const originalText = addBtn.textContent;
 
@@ -113,6 +124,7 @@ class CrnePloce {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Basic ${credentials}`
                 },
                 body: JSON.stringify({ releaseId })
             });
@@ -155,8 +167,18 @@ class CrnePloce {
     displayRecordModal(record) {
         const modal = document.getElementById('recordModal');
         const modalContent = document.getElementById('modalContent');
+        const credentials = sessionStorage.getItem('authCredentials');
 
         const content = this.parseMarkdown(record.content);
+
+        // Only show delete button if user is authenticated
+        const deleteButton = credentials ? `
+            <div class="modal-actions">
+                <button class="delete-btn" onclick="app.deleteRecord('${record.id}')">
+                    🗑️ Obriši ploču
+                </button>
+            </div>
+        ` : '';
 
         modalContent.innerHTML = `
             <div class="modal-record">
@@ -167,11 +189,7 @@ class CrnePloce {
                 ` : ''}
                 <div class="modal-details">
                     ${content}
-                    <div class="modal-actions">
-                        <button class="delete-btn" onclick="app.deleteRecord('${record.id}')">
-                            🗑️ Obriši ploču
-                        </button>
-                    </div>
+                    ${deleteButton}
                 </div>
             </div>
         `;
@@ -221,11 +239,22 @@ class CrnePloce {
             return;
         }
 
+        // Check if user is authenticated
+        const credentials = sessionStorage.getItem('authCredentials');
+        if (!credentials) {
+            this.showStatus('Morate se prijaviti da biste obrisali ploču', 'error');
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1500);
+            return;
+        }
+
         try {
             const response = await fetch('delete_record.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Basic ${credentials}`
                 },
                 body: JSON.stringify({ releaseId: recordId })
             });
@@ -336,6 +365,39 @@ class CrnePloce {
                 ctx.fillText(midYear.toString(), paddingX + (midIndex * barWidth) + barWidth/2, height - 5);
             }
         }
+    }
+
+    updateAuthStatus() {
+        const authStatus = document.getElementById('authStatus');
+        const searchSection = document.querySelector('.search-section');
+        const credentials = sessionStorage.getItem('authCredentials');
+        const username = sessionStorage.getItem('username');
+
+        if (credentials && username) {
+            authStatus.innerHTML = `
+                <span class="username">${this.escapeHtml(username)}</span>
+                <button onclick="app.logout()">Odjavi se</button>
+            `;
+            // Show add record section
+            if (searchSection) {
+                searchSection.classList.remove('hidden');
+            }
+        } else {
+            authStatus.innerHTML = `
+                <button class="login-btn" onclick="window.location.href='login.html'">Prijavi se</button>
+            `;
+            // Hide add record section
+            if (searchSection) {
+                searchSection.classList.add('hidden');
+            }
+        }
+    }
+
+    logout() {
+        sessionStorage.removeItem('authCredentials');
+        sessionStorage.removeItem('username');
+        this.updateAuthStatus();
+        this.showStatus('Uspešno ste se odjavili', 'success');
     }
 }
 
